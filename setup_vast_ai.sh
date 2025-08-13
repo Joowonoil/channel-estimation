@@ -28,17 +28,14 @@ else
     echo "❌ GPU 확인 실패"
 fi
 
-# 5. 채널 추정 프로젝트 클론 (필요한 파일만)
-echo "📥 채널 추정 프로젝트 클론 (선택적 다운로드)..."
+# 5. 채널 추정 프로젝트 클론
+echo "📥 채널 추정 프로젝트 클론..."
 if [ -d "channel-estimation" ]; then
     rm -rf channel-estimation
 fi
 
-git clone --filter=blob:none --no-checkout https://github.com/Joowonoil/channel-estimation.git > /dev/null 2>&1
+git clone https://github.com/Joowonoil/channel-estimation.git > /dev/null 2>&1
 cd channel-estimation
-git sparse-checkout init --cone > /dev/null 2>&1
-git sparse-checkout set model/ config/ dataset/ saved_model/ docs/ utils/ engine_v3.py engine_v4.py Transfer_v3_InF.py Transfer_v3_RMa.py Transfer_v4_InF.py Transfer_v4_RMa.py requirements.txt README.md setup_vast_ai.sh Dockerfile.env .gitignore > /dev/null 2>&1
-git checkout > /dev/null 2>&1
 
 # 6. Git LFS 설정 (현재는 100MB+ 파일 없어서 스킵)
 echo "💾 Git LFS 설정 확인..."
