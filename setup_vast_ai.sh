@@ -28,14 +28,14 @@ else
     echo "❌ GPU 확인 실패"
 fi
 
-# 5. InF 프로젝트 클론
-echo "📥 InF 채널 추정 프로젝트 클론..."
-if [ -d "channel-estimation-training" ]; then
-    rm -rf channel-estimation-training
+# 5. 채널 추정 프로젝트 클론
+echo "📥 채널 추정 프로젝트 클론..."
+if [ -d "channel-estimation" ]; then
+    rm -rf channel-estimation
 fi
 
-git clone https://github.com/joowonoil/channel-estimation-training.git > /dev/null 2>&1
-cd channel-estimation-training
+git clone https://github.com/Joowonoil/channel-estimation.git > /dev/null 2>&1
+cd channel-estimation
 
 # 6. Git LFS 데이터 다운로드
 echo "💾 Git LFS 데이터 다운로드 (약 1-2분 소요)..."
@@ -50,7 +50,7 @@ echo "export CUDA_VISIBLE_DEVICES=0" >> ~/.bashrc
 echo ""
 echo "🎉 설정 완료!"
 echo "📁 작업 디렉토리: $(pwd)"
-echo "🚀 실행 명령어: python Transfer_v4.py"
+echo "🚀 실행 명령어: python Transfer_v4_InF.py 또는 python Transfer_v4_RMa.py"
 echo ""
 echo "📊 WandB 프로젝트: https://wandb.ai/joowon0210/DNN_channel_estimation_InF_LoRA_Transfer"
 echo ""
@@ -63,4 +63,4 @@ echo "   - PyTorch: $(python -c 'import torch; print(torch.__version__)' 2>/dev/
 echo "   - CUDA: $(python -c 'import torch; print(torch.cuda.is_available())' 2>/dev/null)"
 echo "   - 데이터셋: $(ls -la dataset/PDP_processed/ | wc -l) 파일"
 echo ""
-echo "✅ 모든 설정이 완료되었습니다. 이제 'python Transfer_v4.py'를 실행하세요!"
+echo "✅ 모든 설정이 완료되었습니다. 이제 'python Transfer_v4_InF.py' 또는 'python Transfer_v4_RMa.py'를 실행하세요!"
