@@ -285,7 +285,23 @@ class TransferLearningEngine:
 
 
 if __name__ == "__main__":
-    conf_file = 'config_transfer_v3.yaml' # 설정 파일 이름 (v3로 변경)
+    
+    # InF 환경 전용 설정 파일 사용
+    conf_file = 'config_transfer_v3_InF.yaml' # InF 환경 특화 설정 파일 사용
+    
+    print("=" * 60)
+    print("v3 Adapter + InF Transfer Learning Started")
+    print("=" * 60)
+    print(f"Config file: {conf_file}")
+    print(f"Architecture: Transformer v3 + Adapter")
+    print(f"Environment: InF (Indoor Factory)")
+    print(f"Method: Parameter-Efficient Fine-Tuning (Adapter)")
+    print("=" * 60)
+    
     engine = TransferLearningEngine(conf_file) # TransferLearningEngine 객체 생성 (파라미터는 설정 파일에서 로드)
     engine.load_model() # 모델 로드 및 초기화
     engine.train() # 훈련 시작
+    
+    print("=" * 60)
+    print("✅ v3 Adapter + InF Transfer Learning Completed!")
+    print("=" * 60)

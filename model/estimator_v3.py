@@ -27,63 +27,76 @@ class Estimator_v3(nn.Module): # Estimator_v3 클래스 정의
             adapter_dropout=self._conf['ch_estimation']['adapter']['dropout']
         )
 
-        # Load pretrained weights (excluding Adapter weights)
-        pretrained_model_path = Path(__file__).parents[1].resolve() / 'saved_model' / (self._conf['training']['pretrained_model_name'] + '.pt')
-        if not pretrained_model_path.exists():
-             raise FileNotFoundError(f"Pretrained model file not found at {pretrained_model_path}")
+        # Load pretrained weights (excluding Adapter weights) - 베이스 모델 훈련 시에는 스킵
+        pretrained_model_name = self._conf['training'].get('pretrained_model_name', '')
+        if pretrained_model_name and pretrained_model_name.strip():
+            pretrained_model_path = Path(__file__).parents[1].resolve() / 'saved_model' / (pretrained_model_name + '.pt')
+            if not pretrained_model_path.exists():
+                 raise FileNotFoundError(f"Pretrained model file not found at {pretrained_model_path}")
 
-        # Load the pretrained model state dict
-        full_state_dict = torch.load(pretrained_model_path)
+            # Load the pretrained model state dict
+            full_state_dict = torch.load(pretrained_model_path)
 
-        # Extract the state dict for the Transformer part (ch_tf)
+            # Extract the state dict for the Transformer part (ch_tf)
+            # v4 모델 객체인 경우 state_dict()를 호출하여 실제 상태 사전을 가져옵니다.
+            if hasattr(full_state_dict, 'state_dict'):
+                print("Loading from v4 model object, extracting state_dict...")
+                full_state_dict = full_state_dict.state_dict()
+            elif hasattr(full_state_dict, 'ch_tf'):
+                print("Loading from model object with ch_tf attribute, extracting state_dict...")
+                full_state_dict = full_state_dict.state_dict()
 
-        # Extract the state dict for the Transformer part (ch_tf)
-        # Assuming the Transformer state dict is nested under 'ch_tf' key in the full state dict
-        transformer_state_dict_to_load = {}
-        for k, v in full_state_dict.items():
-            # Check if the key starts with 'ch_tf.'
-            if k.startswith('ch_tf.'):
-                # Remove the 'ch_tf.' prefix for loading into self.ch_tf
-                transformer_state_dict_to_load[k.replace('ch_tf.', '')] = v
-            # Handle cases where Transformer parameters might be at the top level or have different prefixes
-            # This part might need adjustment based on the actual pretrained model's state dict keys
-            # For now, assuming 'ch_tf.' prefix is present or parameters are at the top level.
-            elif 'ch_tf' not in k:
-                 # Attempt to load parameters that might be directly under the module (e.g., _embedding, _linear)
-                 # This is a heuristic and might need refinement.
-                 if k in self.ch_tf.state_dict():
-                      transformer_state_dict_to_load[k] = v
-
-
-        if not transformer_state_dict_to_load:
-             print("Warning: No Transformer parameters found in the pretrained model state dict with 'ch_tf.' prefix or matching keys.")
-             print("Please check the pretrained model file and its state dict keys.")
-             # Optionally, raise an error or handle this case based on expected behavior
-             # raise ValueError("Could not find Transformer parameters in the pretrained model state dict.")
-
-
-        # Load the extracted Transformer state dict
-        # Use strict=False to ignore keys in the pretrained state dict that are not in the current model
-        # (e.g., if the pretrained model had more layers or different structure)
-        # Or if the current model has additional layers (like MLP) not in the pretrained model
-        try:
-            self.ch_tf.load_state_dict(transformer_state_dict_to_load, strict=True)
-            print(f"Pretrained Transformer model state dict loaded successfully from {pretrained_model_path}")
-        except RuntimeError as e:
-            print(f"Strict loading failed: {e}. Attempting non-strict loading.")
-            self.ch_tf.load_state_dict(transformer_state_dict_to_load, strict=False)
-            print(f"Pretrained Transformer model state dict loaded non-strictly from {pretrained_model_path}")
+            # Extract the state dict for the Transformer part (ch_tf)
+            # Assuming the Transformer state dict is nested under 'ch_tf' key in the full state dict
+            transformer_state_dict_to_load = {}
+            for k, v in full_state_dict.items():
+                # Check if the key starts with 'ch_tf.'
+                if k.startswith('ch_tf.'):
+                    # Remove the 'ch_tf.' prefix for loading into self.ch_tf
+                    transformer_state_dict_to_load[k.replace('ch_tf.', '')] = v
+                # Handle cases where Transformer parameters might be at the top level or have different prefixes
+                # This part might need adjustment based on the actual pretrained model's state dict keys
+                # For now, assuming 'ch_tf.' prefix is present or parameters are at the top level.
+                elif 'ch_tf' not in k:
+                     # Attempt to load parameters that might be directly under the module (e.g., _embedding, _linear)
+                     # This is a heuristic and might need refinement.
+                     if k in self.ch_tf.state_dict():
+                          transformer_state_dict_to_load[k] = v
 
 
-        # Freeze all Transformer parameters
-        for param in self.ch_tf.parameters():
-            param.requires_grad = False
+            if not transformer_state_dict_to_load:
+                 print("Warning: No Transformer parameters found in the pretrained model state dict with 'ch_tf.' prefix or matching keys.")
+                 print("Please check the pretrained model file and its state dict keys.")
+                 # Optionally, raise an error or handle this case based on expected behavior
+                 # raise ValueError("Could not find Transformer parameters in the pretrained model state dict.")
 
-        # Ensure Adapter parameters are trainable
-        for name, param in self.ch_tf.named_parameters():
-            if 'adapter' in name:
+
+            # Load the extracted Transformer state dict
+            # Use strict=False to ignore keys in the pretrained state dict that are not in the current model
+            # (e.g., if the pretrained model had more layers or different structure)
+            # Or if the current model has additional layers (like MLP) not in the pretrained model
+            try:
+                self.ch_tf.load_state_dict(transformer_state_dict_to_load, strict=True)
+                print(f"Pretrained Transformer model state dict loaded successfully from {pretrained_model_path}")
+            except RuntimeError as e:
+                print(f"Strict loading failed: {e}. Attempting non-strict loading.")
+                self.ch_tf.load_state_dict(transformer_state_dict_to_load, strict=False)
+                print(f"Pretrained Transformer model state dict loaded non-strictly from {pretrained_model_path}")
+
+            # Freeze all Transformer parameters (전이학습 시에만)
+            for param in self.ch_tf.parameters():
+                param.requires_grad = False
+
+            # Ensure Adapter parameters are trainable (전이학습 시에만)
+            for name, param in self.ch_tf.named_parameters():
+                if 'adapter' in name:
+                    param.requires_grad = True
+                    print(f"Unfroze adapter parameter: {name}")
+        else:
+            # 베이스 모델 훈련 시에는 모든 파라미터를 훈련 가능하게 설정
+            print("Training base model from scratch - all parameters are trainable")
+            for param in self.ch_tf.parameters():
                 param.requires_grad = True
-                print(f"Unfroze adapter parameter: {name}")
 
 
         # Phase noise estimation network (주석 처리 유지)
@@ -163,7 +176,7 @@ if __name__ == "__main__":
         'is_noise': True
     }
     dataset, dataloader = get_dataset_and_dataloader(params=param_dict)
-    conf_file = 'config.yaml'
+    conf_file = 'config_transfer_v3.yaml'  # v3 전이학습용 설정 파일 사용
     estimator = Estimator_v3(conf_file).cuda() # Estimator_v3로 변경
     for it, data in enumerate(dataloader):
         rx_signal = data['ref_comp_rx_signal']
