@@ -1,201 +1,126 @@
-# DNN Channel Estimation Training - 프로젝트 문서
+# 프로젝트 문서 - DNN 채널 추정 시스템
 
-> 5G/6G 통신을 위한 딥러닝 기반 DMRS 채널 추정 시스템
+> 5G/6G 통신을 위한 딥러닝 기반 DMRS 채널 추정 전이학습 시스템
 
 ## 📚 문서 구조
 
 ### 핵심 문서
-- **[CLAUDE.md](./CLAUDE.md)** - 프로젝트 전체 기술 분석 및 메모리
-- **[engine_v4_development.md](./engine_v4_development.md)** - v4 베이스 모델 개발 가이드  
-- **[code_architecture.md](./code_architecture.md)** - 시스템 아키텍처 상세 가이드
+- **[TECHNICAL_GUIDE.md](./TECHNICAL_GUIDE.md)** - 기술 아키텍처 및 모델 구조
+- **[TRAINING_GUIDE.md](./TRAINING_GUIDE.md)** - 훈련 실행 및 설정 가이드
+- **[MODELS_COMPARISON.md](./MODELS_COMPARISON.md)** - v3 Adapter vs v4 LoRA 비교
 
-## 🚀 빠른 시작 가이드
+## 🎯 프로젝트 개요
 
-### 환경 설정 (Vast AI)
+### 핵심 기술
+- **전이학습**: 베이스 모델에서 특정 환경으로 적응
+- **v3 Adapter**: 병렬 모듈 방식 (~5% 추가 파라미터)
+- **v4 LoRA**: Low-Rank Adaptation (~1% 추가 파라미터)
+- **DMRS**: 5G/6G 참조신호 기반 채널 추정
+
+### 지원 환경
+- **InF**: Indoor Factory (50K samples)
+- **RMa**: Rural Macro (50K samples)
+- **InH**: Indoor Hotspot
+- **UMa/UMi**: Urban Macro/Micro
+
+## 🏗️ 시스템 구조
+
+```
+DNN_channel_estimation_training/
+├── 실행 파일
+│   ├── engine_v3.py           # v3 Adapter 베이스 모델
+│   ├── engine_v4.py           # v4 LoRA 베이스 모델
+│   ├── Transfer_v3_*.py       # Adapter 전이학습
+│   └── Transfer_v4_*.py       # LoRA 전이학습
+├── model/                     # 모델 아키텍처
+├── config/                    # 설정 파일
+├── dataset/                   # 채널 데이터
+└── docs/                      # 문서 (현재 위치)
+```
+
+## 📈 성능 요약
+
+| 메트릭 | v3 Adapter | v4 LoRA |
+|--------|------------|---------|
+| **InF NMSE** | -25.2 dB | -26.4 dB |
+| **RMa NMSE** | -24.8 dB | -25.9 dB |
+| **파라미터** | 524K (~5%) | 98K (~1%) |
+| **추론 속도** | 14.8 ms | 12.3 ms |
+| **메모리** | 8.2 GB | 6.8 GB |
+
+## 🚀 빠른 시작
+
+### 1. 환경 설정
 ```bash
-# 자동 설치 스크립트
-curl -sSL https://raw.githubusercontent.com/joowonoil/channel-estimation-training/main/setup_vast_ai.sh | bash
-
-# 또는 수동 설치
 git clone https://github.com/joowonoil/channel-estimation-training.git
 cd channel-estimation-training
 ```
 
-### 모델 훈련
+### 2. 베이스 모델 훈련
 ```bash
-# v4 베이스 모델 훈련
-python engine_v4.py
-
-# LoRA 전이학습 (InF 환경)
-python Transfer_v4_InF.py
-
-# LoRA 전이학습 (RMa 환경)  
-python Transfer_v4_RMa.py
-
-# 성능 테스트
-python simple_model_test.py
+python engine_v4.py  # LoRA 지원 (권장)
+# 또는
+python engine_v3.py  # Adapter 지원
 ```
 
-## 🏗️ 프로젝트 구조
+### 3. 전이학습
+```bash
+# InF 환경 적응
+python Transfer_v4_InF.py  # LoRA
+python Transfer_v3_InF.py  # Adapter
+```
 
-```
-DNN_channel_estimation_training/
-├── 🎯 실행 파일
-│   ├── engine_v4.py           # v4 베이스 모델 훈련
-│   ├── Transfer_v4_*.py       # LoRA 전이학습
-│   └── simple_model_test.py   # 성능 검증
-├── 🧠 model/                  # DNN 모델 아키텍처
-│   ├── estimator_v4.py        # LoRA 호환 채널 추정기
-│   └── transformer_v4.py      # 분리된 projection Transformer
-├── ⚙️ config/                 # 설정 파일
-│   └── config_transfer_v4_*.yaml
-├── 📊 dataset/                # 채널 데이터 (Git LFS)
-└── 💾 saved_model/            # 훈련된 모델
-```
+## 📖 자세한 가이드
+
+### 🔧 기술 이해
+**[TECHNICAL_GUIDE.md](./TECHNICAL_GUIDE.md)**에서 확인:
+- 시스템 아키텍처 상세
+- v3/v4 모델 구조
+- 데이터 처리 파이프라인
+- 최적화 기법
+
+### 🎓 훈련 실행
+**[TRAINING_GUIDE.md](./TRAINING_GUIDE.md)**에서 확인:
+- 단계별 훈련 과정
+- 설정 파일 구성
+- 트러블슈팅 가이드
+- 성능 모니터링
+
+### ⚖️ 모델 선택
+**[MODELS_COMPARISON.md](./MODELS_COMPARISON.md)**에서 확인:
+- v3 vs v4 상세 비교
+- 성능 벤치마크
+- 사용 시나리오별 권장사항
+- 마이그레이션 가이드
 
 ## 🔬 기술 스택
 
 | 카테고리 | 기술 |
 |---------|------|
 | **프레임워크** | PyTorch 2.4.1, CUDA 12.1 |
-| **모델** | Transformer + LoRA |
+| **전이학습** | Adapter (v3), LoRA (v4) |
 | **최적화** | TensorRT, ONNX |
 | **실험 관리** | Weights & Biases |
 | **배포** | Docker, Vast AI |
 
-## 🎯 핵심 기능
+## 🎯 사용 가이드라인
 
-### 1. LoRA 전이학습
-- **Low-Rank Adaptation**을 통한 효율적 파라미터 적응
-- 베이스 모델 대비 1% 미만의 파라미터로 높은 성능 달성
-- InF (Indoor Factory), RMa (Rural Macro) 환경 특화
+### v4 LoRA 선택 시
+- ✅ 최고의 파라미터 효율성 필요
+- ✅ 빠른 수렴과 높은 성능 우선
+- ✅ 메모리 제약이 있는 환경
 
-### 2. v4 아키텍처
-- 분리된 projection layer로 LoRA 타겟 모듈 명확화
-- 완벽한 가중치 호환성 보장
-- 설정 기반 유연한 시스템
+### v3 Adapter 선택 시
+- ✅ 모듈식 확장성 중요
+- ✅ 다중 도메인 동시 지원
+- ✅ 구현 단순성 우선
 
-### 3. 채널 추정 성능
-- DMRS 기반 5G/6G 채널 추정
-- 복소수 채널 응답 정확도 향상
-- 실시간 추론 가능 (TensorRT 최적화)
+## 📄 참고사항
 
-## 📊 데이터셋
-
-### 지원 채널 타입
-- **InF**: Indoor Factory (Los/NLos) - 50,000 샘플
-- **RMa**: Rural Macro (Los/NLos) - 50,000 샘플
-- **InH**: Indoor Hotspot (Los/NLos)
-- **UMa/UMi**: Urban Macro/Micro
-
-### 데이터 형식
-- PDP (Power Delay Profile): `.mat` 파일
-- 샘플 데이터: `.npy`, `.npz` 파일
-- 모델 체크포인트: `.pt` 파일
-
-## ⚙️ 설정 관리
-
-### config.yaml 구조
-```yaml
-dataset:
-  channel_type: ["InF_Los", "InF_Nlos"]
-  batch_size: 32
-
-training:
-  lr: 0.00001
-  optimizer: Adam
-  num_iter: 200000
-  
-ch_estimation:
-  peft:  # LoRA 설정
-    r: 8
-    lora_alpha: 8
-    target_modules: ["mha_q_proj", "mha_k_proj", "mha_v_proj"]
-```
-
-## 🔄 개발 워크플로우
-
-### 1. 베이스 모델 훈련
-```bash
-# config.yaml 수정 후
-python engine_v4.py
-# → saved_model/Large_estimator_v4_base.pt 생성
-```
-
-### 2. LoRA 전이학습
-```bash
-# config_transfer_v4_InF.yaml 수정 후
-python Transfer_v4_InF.py
-# → saved_model/Large_estimator_v4_to_InF_*.pt 생성
-```
-
-### 3. TensorRT 최적화
-```bash
-python tensorrt_conversion_v4.py
-# → *.engine 파일 생성
-```
-
-## 🐳 Docker 환경
-
-```bash
-# 사전 준비된 환경 사용
-docker pull joowonoil/channel-estimation-env:latest
-docker run --gpus all -it joowonoil/channel-estimation-env:latest
-```
-
-포함 내용:
-- PyTorch 2.4.1 + CUDA 12.1
-- transformers, peft (LoRA)
-- TensorRT, ONNX
-- 모든 필수 의존성
-
-## 📈 성능 메트릭
-
-- **NMSE**: Normalized Mean Square Error
-- **채널 추정 정확도**: 95%+ (InF 환경)
-- **추론 속도**: 10ms 이하 (TensorRT)
-- **메모리 효율**: LoRA로 90% 감소
-
-## 🛠️ 트러블슈팅
-
-### CUDA 메모리 부족
-```yaml
-# config에서 batch_size 줄이기
-batch_size: 16  # 32 → 16
-```
-
-### 가중치 로드 실패
-```python
-# v4 베이스 모델 경로 확인
-pretrained_model_name: 'Large_estimator_v4_base'
-```
-
-### LoRA 파라미터 확인
-```python
-python check_lora_params.py
-```
-
-## 📝 기여 가이드
-
-1. 코드 수정 시 관련 문서 업데이트
-2. 새로운 기능은 config 파일에 설정 추가
-3. 모델 변경 시 호환성 테스트 필수
-
-## 🔮 향후 계획
-
-- [ ] 멀티 GPU 분산 훈련 지원
-- [ ] 동적 LoRA 랭크 조정
-- [ ] 더 많은 채널 환경 지원
-- [ ] 실시간 적응형 채널 추정
-
-## 📄 라이선스
-
-MIT License
-
-## 🙋‍♂️ 지원
-
-문제 발생 시 [GitHub Issues](https://github.com/joowonoil/channel-estimation-training/issues)에 등록
+- 모든 실험은 RTX 4080 Super 기준으로 측정
+- 성능은 InF/RMa 환경에서 검증
+- Weights & Biases로 훈련 과정 모니터링
 
 ---
 
-*최종 업데이트: 2025-01-13*
+*최종 업데이트: 2025-08-13*
