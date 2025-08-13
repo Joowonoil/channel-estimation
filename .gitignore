@@ -38,7 +38,7 @@ wheels/
 *.log
 logs/
 
-# Wandb 임시 파일들만 제외
+# Wandb 임시 파일들만 제외 (로그 파일은 업로드)
 wandb/run-*/logs/
 wandb/run-*/tmp/
 wandb/debug*

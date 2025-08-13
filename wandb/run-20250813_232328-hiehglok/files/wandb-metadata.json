@@ -1,0 +1,42 @@
+{
+  "os": "Windows-10-10.0.26100-SP0",
+  "python": "CPython 3.11.6",
+  "startedAt": "2025-08-13T14:23:29.085289Z",
+  "program": "D:\\DNN_channel_estimation_training\\engine_v4.py",
+  "codePath": "engine_v4.py",
+  "git": {
+    "remote": "https://github.com/Joowonoil/channel-estimation.git",
+    "commit": "e9cbe536c459198cc368a98c263e6827e0029e19"
+  },
+  "email": "joowonoil@g.skku.edu",
+  "root": "D:\\DNN_channel_estimation_training",
+  "host": "Joowon",
+  "executable": "C:\\Users\\calor\\AppData\\Local\\Programs\\Python\\Python311\\python.exe",
+  "codePathLocal": "engine_v4.py",
+  "cpu_count": 6,
+  "cpu_count_logical": 12,
+  "gpu": "NVIDIA GeForce RTX 3060 Ti",
+  "gpu_count": 1,
+  "disk": {
+    "/": {
+      "total": "2000188076032",
+      "used": "19723964416"
+    }
+  },
+  "memory": {
+    "total": "34281197568"
+  },
+  "cpu": {
+    "count": 6,
+    "countLogical": 12
+  },
+  "gpu_nvidia": [
+    {
+      "name": "NVIDIA GeForce RTX 3060 Ti",
+      "memoryTotal": "8589934592",
+      "cudaCores": 4864,
+      "architecture": "Ampere"
+    }
+  ],
+  "cudaVersion": "12.9"
+}
