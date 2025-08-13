@@ -50,9 +50,12 @@ echo "export CUDA_VISIBLE_DEVICES=0" >> ~/.bashrc
 echo ""
 echo "🎉 설정 완료!"
 echo "📁 작업 디렉토리: $(pwd)"
-echo "🚀 실행 명령어: python Transfer_v4_InF.py 또는 python Transfer_v4_RMa.py"
+echo "🚀 사용 가능한 실행 파일들:"
+echo "   - 베이스 모델: python engine_v3.py 또는 python engine_v4.py"
+echo "   - 전이학습: python Transfer_v3_InF.py, Transfer_v3_RMa.py"
+echo "   -           python Transfer_v4_InF.py, Transfer_v4_RMa.py"
 echo ""
-echo "📊 WandB 프로젝트: https://wandb.ai/joowon0210/DNN_channel_estimation_InF_LoRA_Transfer"
+echo "📊 WandB 프로젝트는 실행하는 코드에 따라 자동 설정됩니다"
 echo ""
 
 # 9. 최종 상태 확인
@@ -63,4 +66,7 @@ echo "   - PyTorch: $(python -c 'import torch; print(torch.__version__)' 2>/dev/
 echo "   - CUDA: $(python -c 'import torch; print(torch.cuda.is_available())' 2>/dev/null)"
 echo "   - 데이터셋: $(ls -la dataset/PDP_processed/ | wc -l) 파일"
 echo ""
-echo "✅ 모든 설정이 완료되었습니다. 이제 'python Transfer_v4_InF.py' 또는 'python Transfer_v4_RMa.py'를 실행하세요!"
+echo "✅ 모든 설정이 완료되었습니다!"
+echo ""
+echo "📂 현재 위치: channel-estimation 폴더"
+echo "🚀 원하는 스크립트를 실행하세요!"
