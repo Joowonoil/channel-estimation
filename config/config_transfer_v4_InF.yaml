@@ -70,3 +70,9 @@ ch_estimation:
     lora_alpha: 8 # LoRA 스케일링 팩터 (alpha) - rank에 비례하여 조정
     target_modules: ["mha_q_proj", "mha_v_proj", "ffnn_linear1"] # LoRA를 적용할 모듈 이름 목록 - 핵심 3개만 선택
     lora_dropout: 0.05 # LoRA 드롭아웃 비율
+
+auto_upload:
+  enabled: true
+  repository: "https://github.com/Joowonoil/vastai_trained_model.git"
+  include_config: true
+  include_training_log: true

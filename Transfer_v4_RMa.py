@@ -8,6 +8,7 @@ from model.estimator_v4 import Estimator_v4 # 모델 Estimator_v4 클래스 임�
 from transformers import get_cosine_schedule_with_warmup # get_cosine_schedule_with_warmup 스케줄러 임포트
 import numpy as np # NumPy 라이브러리 임포트 (수치 연산용)
 from utils.plot_signal import plot_signal # 신호 플롯팅 함수 임포트
+from utils.auto_upload import auto_upload_models # 자동 모델 업로드 함수 임포트
 from peft import LoraConfig, get_peft_model # PEFT 라이브러리 임포트
 # from model.transformer_v2 import Transformer # v2 Transformer 모델 임포트 (v3에서는 사용 안 함, 주석 처리됨)
 
@@ -400,3 +401,14 @@ if __name__ == "__main__": # RMa 환경 특화 전이학습 실행
     print(f"Saved model: check in saved_model/ directory")
     print("Training results available in WandB")
     print("=" * 60)
+    
+    # 자동 모델 업로드 (설정에서 활성화된 경우)
+    print("\n" + "="*50)
+    print("Training completed! Checking auto-upload...")
+    try:
+        final_model_name = engine._conf['training'].get('saved_model_name', 'Large_estimator_v4_to_RMa_lora')
+        auto_upload_models(engine._conf, final_model_name)
+    except Exception as e:
+        print(f"Warning: Auto-upload failed: {str(e)}")
+        print("Models are saved locally in saved_model/ folder")
+    print("="*50)

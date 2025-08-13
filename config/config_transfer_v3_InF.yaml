@@ -69,3 +69,9 @@ ch_estimation:
   adapter: # Adapter Module 설정
     bottleneck_dim: 64 # Adapter bottleneck 차원 (v4 LoRA와 비슷한 파라미터 비율 ~1.3%)
     dropout: 0.1 # Adapter 드롭아웃 비율
+
+auto_upload:
+  enabled: true
+  repository: "https://github.com/Joowonoil/vastai_trained_model.git"
+  include_config: true
+  include_training_log: true
