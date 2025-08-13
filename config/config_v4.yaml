@@ -48,6 +48,13 @@ training:
   # max_lr: 0.00001      # CyclicLR 최대 학습률  0.00002
   # step_size_up: 4000   # 학습률 증가 주기
 
+# 자동 모델 업로드 설정
+auto_upload:
+  enabled: true  # 자동 업로드 활성화 여부
+  repository: "https://github.com/Joowonoil/vastai_trained_model.git"  # 업로드할 저장소
+  include_config: true  # 설정 파일도 함께 업로드
+  include_training_log: true  # 훈련 로그 포함
+
 ch_estimation:
   cond:
     length: 3072

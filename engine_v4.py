@@ -10,6 +10,7 @@ import yaml
 from einops import repeat, rearrange
 from model.transformer_v4 import Transformer, ConditionNetwork
 from utils.plot_signal import plot_signal
+from utils.auto_upload import auto_upload_models
 from timeit import default_timer as timer
 from torchsummary import summary
 import wandb
@@ -194,5 +195,15 @@ if __name__ == "__main__":
 
     # 파라미터 수 출력
     engine.num_params()
+    
+    # 자동 모델 업로드 (설정에서 활성화된 경우)
+    print("\n" + "="*50)
+    print("Training completed! Checking auto-upload...")
+    try:
+        auto_upload_models(engine._conf, f"{final_model_name}_final")
+    except Exception as e:
+        print(f"Warning: Auto-upload failed: {str(e)}")
+        print("Models are saved locally in saved_model/ folder")
+    print("="*50)
 
 # %%
