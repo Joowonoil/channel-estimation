@@ -34,7 +34,7 @@ DNN_channel_estimation_training/
 ```python
 class Adapter(nn.Module):
     """병렬 Adapter 모듈 - 각 Transformer 레이어에 추가"""
-    def __init__(self, input_dim=128, bottleneck_dim=256, dropout=0.1):
+    def __init__(self, input_dim=128, bottleneck_dim=64, dropout=0.1):
         self.fc1 = nn.Linear(input_dim, bottleneck_dim)  # Down-projection
         self.relu = nn.ReLU()
         self.dropout = nn.Dropout(dropout)
@@ -47,7 +47,7 @@ class Adapter(nn.Module):
 ```
 
 **특징**:
-- 추가 파라미터: ~5% (524,288개)
+- 추가 파라미터: ~1.3% (131,072개)
 - 모듈식 확장 가능
 - 추론 시 추가 연산 필요
 

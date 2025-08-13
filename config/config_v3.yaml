@@ -63,5 +63,5 @@ ch_estimation:
     activation: 'relu'   # v4와 동일한 활성화 함수
 
   adapter: # Adapter Module 설정 (베이스 모델 훈련용, 실제로는 사용 안 함)
-    bottleneck_dim: 256 # Adapter bottleneck 차원
+    bottleneck_dim: 64 # Adapter bottleneck 차원 (공정한 비교를 위해 v4 LoRA와 유사한 파라미터 수)
     dropout: 0.1 # Adapter 드롭아웃 비율

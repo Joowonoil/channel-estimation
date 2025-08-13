@@ -5,7 +5,7 @@
 | 특성 | v3 Adapter | v4 LoRA |
 |------|------------|---------|
 | **전이학습 방식** | 병렬 Adapter 모듈 | Low-Rank 분해 |
-| **추가 파라미터** | 524,288 (~5%) | 98,304 (~1%) |
+| **추가 파라미터** | 131,072 (~1.3%) | 98,304 (~1%) |
 | **메모리 사용** | 8.2 GB | 6.8 GB |
 | **추론 속도** | 14.8 ms | 12.3 ms (병합 후) |
 | **구현 복잡도** | 낮음 | 중간 |
@@ -41,7 +41,7 @@ v4 LoRA          | -25.9dB | 25K iter  | 3.0시간
     └── Feed-forward Network
         └── + Adapter (병렬)
 
-Adapter: Linear(128→256) → ReLU → Dropout → Linear(256→128) + Residual
+Adapter: Linear(128→64) → ReLU → Dropout → Linear(64→128) + Residual
 ```
 
 ### v4 LoRA 구조
@@ -88,9 +88,9 @@ Target Modules: Q, K, V, Output, FFN1, FFN2
 ### 파라미터 효율성
 ```python
 # v3 Adapter
-adapter_params_per_layer = 2 * (128 * 256) = 65,536
-total_adapter_params = 8 * 65,536 = 524,288
-percentage = (524,288 / 10,000,000) * 100 = 5.24%
+adapter_params_per_layer = 2 * (128 * 64) = 16,384
+total_adapter_params = 8 * 16,384 = 131,072
+percentage = (131,072 / 10,000,000) * 100 = 1.31%
 
 # v4 LoRA  
 lora_params_per_module = 128 * 8 * 2 = 2,048
@@ -112,9 +112,9 @@ Total             | 14.8 ms    | 13.1 ms | 10.2 ms
 구성요소           | v3 Adapter | v4 LoRA
 ------------------|------------|----------
 Base Model        | 40 MB      | 40 MB
-Adaptation        | 2.1 MB     | 0.4 MB
-Gradients        | 2.1 MB     | 0.4 MB
-Optimizer States  | 4.2 MB     | 0.8 MB
+Adaptation        | 0.5 MB     | 0.4 MB
+Gradients        | 0.5 MB     | 0.4 MB
+Optimizer States  | 1.0 MB     | 0.8 MB
 Total Training    | 8.2 GB     | 6.8 GB
 ```
 

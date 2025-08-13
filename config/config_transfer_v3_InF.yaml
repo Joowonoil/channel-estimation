@@ -69,5 +69,5 @@ ch_estimation:
     activation: 'relu'   # 활성화 함수 유지
 
   adapter: # Adapter Module 설정
-    bottleneck_dim: 256 # Adapter bottleneck 차원
+    bottleneck_dim: 64 # Adapter bottleneck 차원 (v4 LoRA와 비슷한 파라미터 비율 ~1.3%)
     dropout: 0.1 # Adapter 드롭아웃 비율
