@@ -27,21 +27,21 @@ training:
   lr: 0.0001
   weight_decay: 0.000001
   max_norm: 1.0
-  num_iter: 1000  # 테스트용 (원래 100000)
-  logging_step: 10
-  evaluation_step: 1000
+  num_iter: 200000  # 논문용 충분한 학습
+  logging_step: 100
+  evaluation_step: 5000
   evaluation_batch_size: 4
-  pn_train_start_iter: 1000
-  use_scheduler: False
-  num_warmup_steps: 0
+  pn_train_start_iter: 50000
+  use_scheduler: true  # Cosine annealing 사용
+  num_warmup_steps: 1000
   device: 'cuda:0'
-  use_wandb: False  # 테스트용으로 비활성화
+  use_wandb: true
   wandb_proj: 'DNN_channel_estimation_v3_base'  # v3 베이스 모델 프로젝트
   pretrained_model_name: ''  # 베이스 모델 훈련 시에는 빈 값
   ch_loss_weight: 1
   saved_model_name: 'Large_estimator_v3_base_final'  # v3 베이스 모델 이름
   load_model_path: ''
-  model_save_step: 50000
+  model_save_step: 10000  # 더 빈번한 저장으로 안전성 확보
   optimizer: 'Adam'
   momentum: 0.9
 
