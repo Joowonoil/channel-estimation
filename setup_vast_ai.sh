@@ -37,7 +37,7 @@ fi
 git clone --filter=blob:none --no-checkout https://github.com/Joowonoil/channel-estimation.git > /dev/null 2>&1
 cd channel-estimation
 git sparse-checkout init --cone > /dev/null 2>&1
-git sparse-checkout set model/ config/ dataset/ saved_model/ docs/ engine_v3.py engine_v4.py Transfer_v3_InF.py Transfer_v3_RMa.py Transfer_v4_InF.py Transfer_v4_RMa.py requirements.txt README.md setup_vast_ai.sh Dockerfile.env .gitignore > /dev/null 2>&1
+git sparse-checkout set model/ config/ dataset/ saved_model/ docs/ utils/ engine_v3.py engine_v4.py Transfer_v3_InF.py Transfer_v3_RMa.py Transfer_v4_InF.py Transfer_v4_RMa.py requirements.txt README.md setup_vast_ai.sh Dockerfile.env .gitignore > /dev/null 2>&1
 git checkout > /dev/null 2>&1
 
 # 6. Git LFS 설정 (현재는 100MB+ 파일 없어서 스킵)
