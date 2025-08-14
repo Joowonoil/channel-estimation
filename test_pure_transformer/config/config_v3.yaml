@@ -1,0 +1,73 @@
+# v3 베이스 모델 훈련 설정 파일
+# adapter 설정 포함 - Estimator_v3 호환성을 위해
+
+dataset:
+  channel_type: ["InF_Los", "InF_Nlos", "InH_Los", "InH_Nlos", "RMa_Los", "RMa_Nlos", "UMa_Los", "UMa_Nlos", "UMi_Los", "UMi_Nlos"]
+  batch_size: 32
+  noise_spectral_density: -174.0  # dBm/Hz
+  subcarrier_spacing: 120.0  # kHz
+  transmit_power: 30.0  # dBm
+  distance_range: [10.0, 500.0]  # meter
+  carrier_freq: 28.0  # GHz
+  mod_order: 64
+  ref_conf_dict:
+    'dmrs': [0, 3072, 6]
+  fft_size: 4096
+  num_guard_subcarriers: 1024
+  num_symbol: 14
+  cp_length: 590  # cyclic prefix length (ns)
+  max_random_tap_delay_cp_proportion: 0.2  # random tap delay in proportion of CP length
+  rnd_seed: 0
+  num_workers: 0
+  is_phase_noise: False
+  is_channel: True
+  is_noise: True
+
+training:
+  lr: 0.0001
+  weight_decay: 0.000001
+  max_norm: 1.0
+  num_iter: 200000  # 논문용 충분한 학습
+  logging_step: 100
+  evaluation_step: 5000
+  evaluation_batch_size: 4
+  pn_train_start_iter: 50000
+  use_scheduler: true  # Cosine annealing 사용
+  num_warmup_steps: 1000
+  device: 'cuda:0'
+  use_wandb: true
+  wandb_proj: 'DNN_channel_estimation_v3_base'  # v3 베이스 모델 프로젝트
+  pretrained_model_name: ''  # 베이스 모델 훈련 시에는 빈 값
+  ch_loss_weight: 1
+  saved_model_name: 'Large_estimator_v3_base_final'  # v3 베이스 모델 이름
+  load_model_path: ''
+  model_save_step: 10000  # 더 빈번한 저장으로 안전성 확보
+  optimizer: 'Adam'
+  momentum: 0.9
+
+ch_estimation:
+  cond:
+    length: 3072
+    in_channels: 2
+    step_size: 12
+    steps_per_token: 1
+  transformer:
+    length: 3072
+    channels: 2
+    num_layers: 4        # v4와 동일한 레이어 수 (공정한 비교)
+    d_model: 128         # v4와 동일한 모델 차원
+    n_token: 256         # v4와 동일한 토큰 수
+    n_head: 8            # v4와 동일한 헤드 수
+    dim_feedforward: 1024 # v4와 동일한 FFN 차원
+    dropout: 0.1         # v4와 동일한 드롭아웃
+    activation: 'relu'   # v4와 동일한 활성화 함수
+
+  adapter: # Adapter Module 설정 (베이스 모델 훈련용, 실제로는 사용 안 함)
+    bottleneck_dim: 64 # Adapter bottleneck 차원 (공정한 비교를 위해 v4 LoRA와 유사한 파라미터 수)
+    dropout: 0.1 # Adapter 드롭아웃 비율
+
+auto_upload:
+  enabled: true
+  repository: "https://github.com/Joowonoil/vastai_trained_model.git"
+  include_config: true
+  include_training_log: true

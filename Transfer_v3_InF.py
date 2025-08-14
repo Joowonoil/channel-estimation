@@ -304,7 +304,7 @@ if __name__ == "__main__":
     engine.train() # 훈련 시작
     
     print("=" * 60)
-    print("✅ v3 Adapter + InF Transfer Learning Completed!")
+    print("v3 Adapter + InF Transfer Learning Completed!")
     print("=" * 60)
     
     # 자동 모델 업로드 (설정에서 활성화된 경우)

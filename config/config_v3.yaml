@@ -27,9 +27,9 @@ training:
   lr: 0.0001
   weight_decay: 0.000001
   max_norm: 1.0
-  num_iter: 200000  # 논문용 충분한 학습
+  num_iter: 200000  # 체계적 분석을 위한 긴 베이스 학습
   logging_step: 100
-  evaluation_step: 5000
+  evaluation_step: 5000  # 긴 학습용 평가 간격
   evaluation_batch_size: 4
   pn_train_start_iter: 50000
   use_scheduler: true  # Cosine annealing 사용
@@ -41,7 +41,7 @@ training:
   ch_loss_weight: 1
   saved_model_name: 'Large_estimator_v3_base_final'  # v3 베이스 모델 이름
   load_model_path: ''
-  model_save_step: 10000  # 더 빈번한 저장으로 안전성 확보
+  model_save_step: 10000  # 20K, 50K, 100K, 200K 체크포인트 생성용
   optimizer: 'Adam'
   momentum: 0.9
 
@@ -62,12 +62,13 @@ ch_estimation:
     dropout: 0.1         # v4와 동일한 드롭아웃
     activation: 'relu'   # v4와 동일한 활성화 함수
 
-  adapter: # Adapter Module 설정 (베이스 모델 훈련용, 실제로는 사용 안 함)
-    bottleneck_dim: 64 # Adapter bottleneck 차원 (공정한 비교를 위해 v4 LoRA와 유사한 파라미터 수)
-    dropout: 0.1 # Adapter 드롭아웃 비율
+  adapter: # Adapter Module 설정 (베이스 모델 훈련용)
+    enabled: false # Adapter 완전 비활성화 - 순수 Transformer만 학습
+    bottleneck_dim: 64 # Adapter bottleneck 차원 (비활성화 시 무시됨)
+    dropout: 0.1 # Adapter 드롭아웃 비율 (비활성화 시 무시됨)
 
 auto_upload:
-  enabled: true
+  enabled: false
   repository: "https://github.com/Joowonoil/vastai_trained_model.git"
   include_config: true
   include_training_log: true

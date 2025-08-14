@@ -6,8 +6,7 @@ dataset:
   noise_spectral_density: -174.0  # dBm/Hz # 잡음 스펙트럼 밀도 설정
   subcarrier_spacing: 120.0  # kHz # 서브캐리어 간격 설정
   transmit_power: 30.0  # dBm # 전송 파워 설정
-  distance_range: [10.0, 500.0]
-#  distance_range: [300.0, 500.0]  # meter # RMa Transfer 전용 거리 범위
+  distance_range: [300.0, 500.0]  # meter # RMa Transfer 전용 거리 범위
   carrier_freq: 28.0  # GHz # 캐리어 주파수 설정
   mod_order: 64 # 변조 방식 차수 설정 (예: 64-QAM)
   ref_conf_dict: # 참조 신호 설정 딕셔너리
@@ -28,9 +27,9 @@ training:
   lr: 0.0001 # 학습률 (Learning Rate) 설정 - Adapter는 낮은 학습률 사용
   weight_decay: 0.000001 # 가중치 감소 (Weight Decay) 설정 (L2 정규화)
   max_norm: 1.0 # 그래디언트 클리핑을 위한 최대 L2 노름 값
-  num_iter: 60000 # 전이학습용 최적 이터레이션 수
+  num_iter: 1000 # 테스트용 단축 이터레이션 수
   logging_step: 50 # 전이학습용 빠른 로깅
-  evaluation_step: 2000 # 전이학습 평가 간격
+  evaluation_step: 200 # 테스트용 빠른 평가 간격
   evaluation_batch_size: 4 # 검증 시 사용할 배치 크기
   pn_train_start_iter: 1000 # 위상 잡음 훈련 시작 이터레이션
   use_scheduler: False # 학습률 스케줄러 사용 여부
@@ -39,14 +38,14 @@ training:
   use_early_stopping: false
   device: 'cuda:0' # 훈련에 사용할 디바이스 (예: 'cuda:0', 'cpu')
   use_wandb: True # Weights & Biases 로깅 사용 여부
-  wandb_proj: 'DNN_channel_estimation_RMa_Adapter_Transfer' # WandB 프로젝트 이름 (RMa Adapter 전이학습)
-  pretrained_model_name: 'Large_estimator_v3_base_final' # 로드할 사전 훈련된 v3 베이스 모델 이름
+  wandb_proj: 'DNN_channel_estimation_RMa_Adapter_Transfer_Parameter_Optimized' # WandB 프로젝트 이름 (RMa Adapter 파라미터 최적화 전이학습)
+  pretrained_model_name: 'Large_estimator_v3_base_final_iter_10000' # 로드할 사전 훈련된 v3 순수 베이스 모델 이름
   ch_loss_weight: 1 # 채널 손실에 적용할 가중치
-  saved_model_name: 'Large_estimator_v3_to_RMa_adapter' # 훈련 완료 후 저장할 모델 이름 (RMa Adapter 전이학습)
+  saved_model_name: 'Large_estimator_v3_to_RMa_adapter_bottleneck10' # 훈련 완료 후 저장할 모델 이름 (RMa Adapter bottleneck_dim=10)
   num_freeze_layers: 4 # Adapter 방식을 사용하므로 Transformer 레이어 프리징은 4로 설정 (Adapter만 학습)
   model_load_mode: 'pretrained' # 모델 로드 방식 선택: 'pretrained' (사전 학습 가중치 로드) 또는 'finetune' (기존 체크포인트 로드)
   load_model_path: '' # 'finetune' 모드일 때 불러올 모델 경로 (예: 'saved_model/your_model_name.pt')
-  model_save_step: 5000 # 모델 저장 간격 (이터레이션 수)
+  model_save_step: 500 # 테스트용 모델 저장 간격
 
 # 채널 추정 모델 관련 설정
 ch_estimation:
@@ -67,11 +66,13 @@ ch_estimation:
     activation: 'relu'   # 활성화 함수 유지
 
   adapter: # Adapter Module 설정
-    bottleneck_dim: 64 # Adapter bottleneck 차원 (v4 LoRA와 비슷한 파라미터 비율 ~1.3%)
+    enabled: true # Adapter 활성화 - 전이학습에서 사용
+    # bottleneck_dim: 64 # 기존 설정 - 파라미터 효율성 8.1%
+    bottleneck_dim: 10 # 수정된 설정 - v4 LoRA와 비슷한 파라미터 효율성 ~1.3%
     dropout: 0.1 # Adapter 드롭아웃 비율
 
 auto_upload:
-  enabled: true
+  enabled: false
   repository: "https://github.com/Joowonoil/vastai_trained_model.git"
   include_config: true
   include_training_log: true

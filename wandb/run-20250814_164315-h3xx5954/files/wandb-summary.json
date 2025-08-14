@@ -1,0 +1,1 @@
+{"ch_nmse": 0.04056688770651817, "_timestamp": 1755158993.7427816, "_runtime": 1597.7693717479706, "_step": 119, "estimation": {"_type": "image-file", "sha256": "885f92a0e105f1940f299ef1dac42aafdf376c5d1bbb2d378b25aab4e3f964a2", "size": 211914, "path": "media/images/estimation_101_885f92a0e105f1940f29.png", "format": "png", "width": 1000, "height": 1200}}

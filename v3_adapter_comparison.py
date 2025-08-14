@@ -34,22 +34,25 @@ class V3AdapterTester:
         models = {}
         saved_model_dir = Path(__file__).parent / 'saved_model'
         
-        # Base v3 모델 로드 (engine_v3.py로 학습)
-        base_path = saved_model_dir / 'Large_estimator_v3_base_final.pt'
+        # Base v3 모델 로드 (저장된 Estimator_v3 객체 직접 사용)
+        base_path = saved_model_dir / 'Large_estimator_v3_base_final_iter_10000.pt'
         if base_path.exists():
             try:
+                # 저장된 Estimator_v3 객체를 직접 로드
                 base_model = torch.load(base_path, map_location=self.device)
+                base_model.to(self.device)
                 base_model.eval()
+                
                 models['Base_v3'] = base_model
-                print("[OK] Loaded Base_v3 (engine_v3 trained)")
+                print("[OK] Loaded Base_v3 (Pure Transformer without Adapters)")
             except Exception as e:
                 print(f"[ERROR] Failed to load Base_v3: {e}")
         else:
-            print("[WARNING] Large_estimator_v3_base_final.pt not found")
+            print("[WARNING] Large_estimator_v3_base_final_iter_10000.pt not found")
             print("[INFO] Run engine_v3.py first to train the base model")
             
         # InF Adapter 모델 로드
-        inf_adapter_path = saved_model_dir / 'Large_estimator_v3_to_InF_adapter.pt'
+        inf_adapter_path = saved_model_dir / 'Large_estimator_v3_to_InF_adapter_bottleneck10.pt'
         if inf_adapter_path.exists():
             try:
                 # Adapter 모델은 state_dict로 저장되므로, 모델 구조를 만들고 로드
@@ -81,7 +84,7 @@ class V3AdapterTester:
             print("[INFO] Run Transfer_v3_InF.py first to train the InF adapter model")
             
         # RMa Adapter 모델 로드
-        rma_adapter_path = saved_model_dir / 'Large_estimator_v3_to_RMa_adapter.pt'
+        rma_adapter_path = saved_model_dir / 'Large_estimator_v3_to_RMa_adapter_bottleneck10.pt'
         if rma_adapter_path.exists():
             try:
                 # Adapter 모델은 state_dict로 저장되므로, 모델 구조를 만들고 로드
@@ -269,7 +272,7 @@ class V3AdapterTester:
         
         # 요약 출력
         print("\n" + "=" * 60)
-        print("📋 v3 Adapter Performance Summary")
+        print("v3 Adapter Performance Summary")
         print("=" * 60)
         for model_name, model_results in results.items():
             print(f"\n{model_name}:")
@@ -283,70 +286,104 @@ class V3AdapterTester:
         return results
     
     def plot_results(self, results):
-        """결과 시각화"""
-        # 1. 성능 비교 차트
-        fig, (ax1, ax2) = plt.subplots(1, 2, figsize=(15, 6))
-        
+        """결과 시각화 - v4 스타일과 동일하게"""
+        # 데이터 준비
         model_names = list(results.keys())
-        dataset_names = ['InF_50m', 'RMa_300m']
+        datasets = ['InF_50m', 'RMa_300m']
         
-        x = np.arange(len(model_names))
-        width = 0.35
+        # 첫 번째 플롯: 전체 모델 성능 비교
+        plt.figure(figsize=(14, 7))
         
-        # InF 성능
-        inf_scores = [results[model].get('InF_50m', float('inf')) for model in model_names]
-        inf_scores = [score if score != float('inf') else 0 for score in inf_scores]
+        bar_width = 0.25
+        x_positions = np.arange(len(datasets))
         
-        # RMa 성능
-        rma_scores = [results[model].get('RMa_300m', float('inf')) for model in model_names]
-        rma_scores = [score if score != float('inf') else 0 for score in rma_scores]
+        colors = ['#3498db', '#2ecc71', '#e74c3c', '#f39c12', '#9b59b6']
         
-        # 막대 그래프
-        ax1.bar(x - width/2, inf_scores, width, label='InF Environment', alpha=0.8, color='skyblue')
-        ax1.bar(x + width/2, rma_scores, width, label='RMa Environment', alpha=0.8, color='lightcoral')
-        
-        ax1.set_xlabel('Models')
-        ax1.set_ylabel('NMSE (dB)')
-        ax1.set_title('v3 Adapter Performance Comparison')
-        ax1.set_xticks(x)
-        ax1.set_xticklabels(model_names, rotation=45)
-        ax1.legend()
-        ax1.grid(True, alpha=0.3)
-        
-        # 2. 개선도 비교 (베이스 모델 대비)
-        if 'Base_v3' in results:
-            base_inf = results['Base_v3'].get('InF_50m', 0)
-            base_rma = results['Base_v3'].get('RMa_300m', 0)
+        for i, model in enumerate(model_names):
+            values = []
+            for dataset in datasets:
+                value = results[model].get(dataset, np.nan)
+                values.append(value)
             
-            inf_improvements = []
-            rma_improvements = []
-            transfer_models = []
+            # NaN이 아닌 값만 플롯
+            valid_values = []
+            valid_positions = []
+            for j, val in enumerate(values):
+                if not np.isnan(val):
+                    valid_values.append(val)
+                    valid_positions.append(x_positions[j] + i * bar_width)
             
-            for model_name in model_names:
-                if 'Adapter' in model_name:
-                    transfer_models.append(model_name.replace('_v3', ''))
-                    inf_improvements.append(base_inf - results[model_name].get('InF_50m', 0))
-                    rma_improvements.append(base_rma - results[model_name].get('RMa_300m', 0))
-            
-            if transfer_models:
-                x2 = np.arange(len(transfer_models))
-                ax2.bar(x2 - width/2, inf_improvements, width, label='InF Improvement', alpha=0.8, color='green')
-                ax2.bar(x2 + width/2, rma_improvements, width, label='RMa Improvement', alpha=0.8, color='orange')
+            if valid_values:
+                bars = plt.bar(valid_positions, valid_values, bar_width, 
+                              label=model, color=colors[i % len(colors)], alpha=0.8)
                 
-                ax2.set_xlabel('Transfer Learning Models')
-                ax2.set_ylabel('NMSE Improvement (dB)')
-                ax2.set_title('Adapter Transfer Learning Improvement\n(Compared to Base v3)')
-                ax2.set_xticks(x2)
-                ax2.set_xticklabels(transfer_models, rotation=45)
-                ax2.legend()
-                ax2.grid(True, alpha=0.3)
-                ax2.axhline(y=0, color='black', linestyle='--', alpha=0.5)
+                # 막대 위에 값 표시
+                for bar, val in zip(bars, valid_values):
+                    plt.text(bar.get_x() + bar.get_width()/2., val + 0.3,
+                            f'{val:.2f}', ha='center', va='bottom', fontsize=10)
         
+        plt.xlabel('Test Environment', fontsize=12)
+        plt.ylabel('NMSE (dB)', fontsize=12)
+        plt.title('v3 Adapter Transfer Learning Performance Comparison', fontsize=14)
+        plt.xticks(x_positions + bar_width, datasets)
+        plt.legend(bbox_to_anchor=(1.05, 1), loc='upper left')
+        plt.grid(True, axis='y', alpha=0.3)
         plt.tight_layout()
-        plt.savefig('v3_adapter_comparison.png', dpi=300, bbox_inches='tight')
+        
+        # 첫 번째 플롯 저장
+        save_path = 'v3_adapter_comparison.png'
+        plt.savefig(save_path, dpi=300, bbox_inches='tight')
+        print(f"[OK] Saved {save_path}")
         plt.show()
         
-        print("[OK] Saved v3_adapter_comparison.png")
+        # 두 번째 플롯: 개선도 비교 (베이스 모델 대비)
+        if 'Base_v3' in results:
+            plt.figure(figsize=(12, 6))
+            
+            improvements = []
+            model_labels = []
+            
+            for dataset in datasets:
+                base_nmse = results['Base_v3'].get(dataset, np.nan)
+                
+                for model_name in model_names:
+                    if 'Adapter' in model_name and not np.isnan(base_nmse):
+                        model_nmse = results[model_name].get(dataset, np.nan)
+                        if not np.isnan(model_nmse):
+                            improvement = base_nmse - model_nmse
+                            improvements.append(improvement)
+                            
+                            # 모델 이름과 환경 조합
+                            env_name = 'InF' if 'InF' in model_name else 'RMa'
+                            model_labels.append(f'{dataset}\n({env_name} Adapter)')
+            
+            if improvements:
+                x_pos = np.arange(len(improvements))
+                colors_imp = ['#2ecc71' if imp > 0 else '#e74c3c' for imp in improvements]
+                
+                bars = plt.bar(x_pos, improvements, color=colors_imp, alpha=0.8)
+                
+                # 값 표시
+                for bar, imp in zip(bars, improvements):
+                    height = bar.get_height()
+                    plt.text(bar.get_x() + bar.get_width()/2., 
+                            height + 0.02 if height > 0 else height - 0.05,
+                            f'{height:.2f}', ha='center', 
+                            va='bottom' if height > 0 else 'top', fontsize=10)
+                
+                plt.xlabel('Dataset and Adapter Type', fontsize=12)
+                plt.ylabel('NMSE Improvement vs Base (dB)', fontsize=12)
+                plt.title('v3 Adapter Performance Improvement\n(Compared to Base Model)', fontsize=14)
+                plt.xticks(x_pos, model_labels)
+                plt.grid(True, axis='y', alpha=0.3)
+                plt.axhline(y=0, color='black', linestyle='--', alpha=0.5)
+                plt.tight_layout()
+                
+                # 두 번째 플롯 저장
+                save_path_imp = 'v3_adapter_improvement.png'
+                plt.savefig(save_path_imp, dpi=300, bbox_inches='tight')
+                print(f"[OK] Saved {save_path_imp}")
+                plt.show()
 
 def main():
     tester = V3AdapterTester()
